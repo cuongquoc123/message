@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Messenger Socket.IO Demo</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      body {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+
+      .chat-box {
+        width: 48%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+      }
+
+      .chat-header {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .chat-messages {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+      }
+
+      .chat-messages li {
+        margin-bottom: 5px;
+      }
+
+      input,
+      button {
+        padding: 5px;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-box" id="userA-box">
+      <div class="chat-header">🧑 User A</div>
+      <input id="userA-name" placeholder="Your name" />
+      <div class="chat-messages" id="userA-messages"></div>
+      <input id="userA-msg" placeholder="Type a message" />
+      <button onclick="sendMessage('userA')">Send</button>
+    </div>
+
+    <div class="chat-box" id="userB-box">
+      <div class="chat-header">👩 User B</div>
+      <input id="userB-name" placeholder="Your name" />
+      <div class="chat-messages" id="userB-messages"></div>
+      <input id="userB-msg" placeholder="Type a message" />
+      <button onclick="sendMessage('userB')">Send</button>
+    </div>
+
+    <script>
+      const socketA = io();
+      const socketB = io();
+
+      // Gửi message từ User A
+      function sendMessage(user) {
+        if (user === "userA") {
+          const name = document.getElementById("userA-name").value || "User A";
+          const msg = document.getElementById("userA-msg").value;
+          if (!msg) return;
+          socketA.emit("sendMessage", { from: name, message: msg });
+          document.getElementById("userA-msg").value = "";
+        }
+
+        if (user === "userB") {
+          const name = document.getElementById("userB-name").value || "User B";
+          const msg = document.getElementById("userB-msg").value;
+          if (!msg) return;
+          socketB.emit("sendMessage", { from: name, message: msg });
+          document.getElementById("userB-msg").value = "";
+        }
+      }
+
+      // Nhận message bên User A
+      socketA.on("receiveMessage", (data) => {
+        const msgDiv = document.getElementById("userA-messages");
+        const li = document.createElement("div");
+        li.textContent = `${data.from}: ${data.message}`;
+        msgDiv.appendChild(li);
+      });
+
+      // Nhận message bên User B
+      socketB.on("receiveMessage", (data) => {
+        const msgDiv = document.getElementById("userB-messages");
+        const li = document.createElement("div");
+        li.textContent = `${data.from}: ${data.message}`;
+        msgDiv.appendChild(li);
+      });
+    </script>
+  </body>
+</html>
